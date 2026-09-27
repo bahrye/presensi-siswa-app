@@ -29,7 +29,7 @@ jobs:
           java-version: 17
           cache: 'gradle'
 
-      - name: Accept Android SDK Licenses
+      - name: Accept Android SDK Licenses & Setup Android 36
         run: |
           mkdir -p "$ANDROID_HOME/licenses" || true
           echo "24333f8a63b6825ea9c5514f83c2829b004d1fee" >> "$ANDROID_HOME/licenses/android-sdk-license"
@@ -41,6 +41,7 @@ jobs:
           echo "33b6a2b64f07f11b283f85dc9b941570d507729f" >> "$ANDROID_HOME/licenses/google-gdk-license"
           echo "e9acab5b5fbb560a72cfa4f69c30ed2e08ad5d97" >> "$ANDROID_HOME/licenses/mips-android-sysimage-license"
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" || true
 
       - name: Install Dependencies
         run: |
