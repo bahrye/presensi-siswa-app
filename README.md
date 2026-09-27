@@ -37,23 +37,44 @@ Aplikasi Android modern untuk pencatatan dan pengelolaan presensi / kehadiran si
 
 ---
 
-## 🗄️ Struktur Data Google Sheets
+## 🗄️ Struktur Data Google Sheets Master (Multi-Sekolah)
 
-Aplikasi mendukung skema tabel berikut:
+Sistem menggunakan **1 Google Spreadsheet Master terpusat** dengan 4 sheet:
 
-### 1. Sheet `Siswa`
+### 1. Sheet `Sekolah`
 | Kolom | Tipe Data | Contoh Nilai |
 |---|---|---|
+| `ID_Sekolah` | Text | `SCH01` |
+| `Nama_Sekolah` | Text | `SMP Negeri 1 Nusantara` |
+| `NPSN` | Text | `20101234` |
+| `PIN_Admin` | Text | `admin123` |
+| `Alamat` | Text | `Jl. Merdeka No. 1, Jakarta` |
+
+### 2. Sheet `Siswa`
+| Kolom | Tipe Data | Contoh Nilai |
+|---|---|---|
+| `ID_Sekolah` | Text | `SCH01` |
 | `ID_Siswa` | Text | `S001` |
 | `NISN` | Text | `0081234501` |
 | `Nama` | Text | `Ahmad Fajar Prasetyo` |
 | `Kelas` | Text | `7A` |
 | `Jenis_Kelamin` | Text | `L` atau `P` |
 
-### 2. Sheet `Presensi`
+### 3. Sheet `Guru`
+| Kolom | Tipe Data | Contoh Nilai |
+|---|---|---|
+| `ID_Sekolah` | Text | `SCH01` |
+| `ID_Guru` | Text | `G001` |
+| `Nama_Guru` | Text | `Drs. Ahmad Fauzi, M.Pd` |
+| `PIN_Password` | Text | `1234` |
+| `Wali_Kelas` | Text | `7A` |
+| `Status_Guru` | Text | `Satminkal` atau `Non-Satminkal` |
+
+### 4. Sheet `Presensi`
 | Kolom | Tipe Data | Contoh Nilai |
 |---|---|---|
 | `Timestamp` | Text / Datetime | `2026-09-27 07:45:00` |
+| `ID_Sekolah` | Text | `SCH01` |
 | `Tanggal` | Text (YYYY-MM-DD) | `2026-09-27` |
 | `ID_Siswa` | Text | `S001` |
 | `Nama` | Text | `Ahmad Fajar Prasetyo` |
@@ -62,62 +83,56 @@ Aplikasi mendukung skema tabel berikut:
 | `Keterangan` | Text | `Demam tinggi` |
 | `Nama_Guru` | Text | `Drs. Ahmad Fauzi, M.Pd` |
 
-### 3. Sheet `Guru`
-| Kolom | Tipe Data | Contoh Nilai |
-|---|---|---|
-| `ID_Guru` | Text | `G001` |
-| `Nama_Guru` | Text | `Drs. Ahmad Fauzi, M.Pd` |
-| `PIN_Password` | Text | `1234` |
-| `Wali_Kelas` | Text | `7A` |
-
 ---
 
-## 🔐 Sistem Autentikasi & Hak Akses Akun
+## 🔐 Sistem Multi-Sekolah & Pembagian Peran
 
-Aplikasi menggunakan sistem autentikasi saat pertama kali dibuka dengan pembagian peran yang ketat:
+Aplikasi menggunakan sistem **Multi-Tenant Terpusat**:
 
-### 1. 🛡️ Akun Admin Sekolah (Portal Konfigurasi Database & Manajemen Data)
+### 1. 🏫 Pemilih Sekolah (School Switcher)
+- Di bagian atas layar masuk, terdapat pemilih sekolah:  
+  *Contoh: `[ SMP Negeri 1 Nusantara ▼ ]` atau `[ SMP Swasta Bhakti Utama ▼ ]`*
+- Tombol **`+ Daftarkan Sekolah`**: Siapa pun admin baru dapat mendaftarkan sekolahnya langsung ke sistem!
+
+### 2. 🛡️ Akun Admin Sekolah (Portal Khusus per Sekolah)
 - **Akses:** Tab **"Admin Sekolah"** di layar awal.
-- **Password Default:** `admin123` *(dapat diganti melalui menu keamanan admin)*.
+- **Login:** Menggunakan PIN Admin milik sekolah terpilih (Default: `admin123`).
 - **Fungsi Khusus:**
-  - **Manajemen Siswa:** Tombol **"+ Tambah Siswa"** untuk menambahkan siswa baru (Nama, Kelas, Jenis Kelamin, NISN) langsung ke Sheet `Siswa`.
-  - **Manajemen Guru:** Tombol **"+ Tambah Guru"** untuk mendaftarkan akun guru baru (Nama, NIP/ID Unik, PIN, Wali Kelas) langsung ke Sheet `Guru`.
-  - Memasukkan & menyimpan Web App URL Google Apps Script.
-  - Menjalankan **Tes Koneksi API** ke Google Sheets.
-  - Melakukan **Setup Otomatis Tabel Spreadsheet** (membuat sheet `Siswa`, `Presensi`, dan `Guru`).
-  - Menyinkronkan daftar guru pengajar dan kelas dari Spreadsheet.
-  - Mengubah password administrator.
+  - **Zero Config:** Admin sekolah **TIDAK PERLU** membuat spreadsheet atau menyetting Google Apps Script sendiri!
+  - **Manajemen Siswa:** Tombol **"+ Tambah Siswa"** untuk menambahkan siswa baru khusus di sekolahnya.
+  - **Manajemen Guru:** Tombol **"+ Tambah Guru"** untuk mendaftarkan guru baru dengan pilihan status: **`Satminkal`** (Guru Induk) atau **`Non-Satminkal`** (Guru Lintas Sekolah/Tamu).
+  - Ganti PIN Admin sekolah.
 
-### 2. 👨‍🏫 Akun Guru Pengajar (Presensi & Rekap Kehadiran)
+### 3. 👨‍🏫 Akun Guru Pengajar (Mendukung Satminkal & Non-Satminkal)
 - **Akses:** Tab **"Guru Pengajar"** di layar awal.
-- **Identitas Unik (ID / NIP):** Setiap guru memiliki **ID_Guru / NIP unik**. 
-  - Jika ada guru dengan **nama yang sama**, sistem membedakannya dari **NIP / ID Guru** yang tertera di menu dropdown (misal: *Siti Rahmawati - ID: G002* vs *Siti Rahmawati - ID: G005*).
-  - Jika ada guru dengan **PIN / Password yang sama** (misal sama-sama menggunakan PIN bawaan `1234`), hal ini **tidak akan tertukar/bentrok**, karena sistem mencocokkan ID Guru yang dipilih terlebih dahulu baru memverifikasi PIN.
+- **Kasus Guru Mengajar di 2 Sekolah Berbeda:**
+  - Jika Guru A (NIP: `1985...`) mengajar di **SMP 1** (sebagai *Satminkal*) dan juga mengajar jam tambahan di **SMP 2** (sebagai *Non-Satminkal*):
+  - Guru A cukup memilih sekolah yang dituju di bagian atas, lalu login dengan akun dan PIN-nya!
+  - Data presensi otomatis masuk ke database sekolah yang dipilih tanpa saling mencampuri.
 - **Fungsi Khusus:**
   - Input presensi harian per kelas dan tanggal dengan cepat.
   - Tombol cepat **"Set Semua Hadir"** dan input keterangan izin/sakit/alpa.
   - Tab **Riwayat Kehadiran** dan **Rekap Bulanan**.
-  - **Bebas Konfigurasi Teknis:** Guru **tidak melihat** konfigurasi Google Sheets URL sehingga antarmuka tetap bersih, fokus, dan aman dari salah ubah.
 
 ---
 
-## 🚀 Panduan Setup Backend (Google Apps Script)
+## 🚀 Panduan Setup Backend Master (Cukup 1 Kali Saja)
+
+Karena sistem menggunakan 1 Master Google Apps Script terpusat, pengembang/pusat hanya perlu men-deploy 1 kali saja:
 
 1. Buka spreadsheet baru di [Google Sheets](https://sheets.new).
 2. Pada menu atas, klik **Ekstensi (Extensions)** > **Apps Script**.
 3. Buka file [`apps-script/Code.gs`](file:///C:/Users/ASUS/.gemini/antigravity-ide/scratch/presensi-siswa-app/apps-script/Code.gs) pada repositori ini, salin seluruh kodenya dan tempel ke editor Apps Script.
-4. Simpan (`Ctrl + S`).
+4. Klik tombol **Run (Jalankan)** pada fungsi `testRunSetup` untuk membuat 4 tabel otomatis dan mengotorisasi izin akun Google.
 5. Klik **Terapkan (Deploy)** di pojok kanan atas > **Penerapan Baru (New deployment)**.
 6. Pilih jenis: **Aplikasi Web (Web app)**.
 7. Isi form:
-   - **Deskripsi:** `API Presensi Siswa v1`
+   - **Deskripsi:** `Master Multi-School API v2`
    - **Jalankan sebagai (Execute as):** `Saya (Me)`
-   - **Siapa yang memiliki akses (Who has access):** **`Siapa saja (Anyone)`** *(Wajib dipilih Anyone)*.
-8. Klik **Terapkan (Deploy)**, berikan otorisasi izin akun Google jika diminta.
-9. Salin **URL Aplikasi Web** yang berakhiran `/exec`.
-10. Buka aplikasi, pilih tab **Admin Sekolah** (PIN: `admin123`), tempel URL tersebut, lalu klik **"Simpan URL"** dan **"Tes Koneksi"**.
-11. Klik tombol **"Setup Otomatis Tabel Spreadsheet"** untuk membuat sheet dan mengisinya dengan data sampel secara otomatis.
-12. Guru kini dapat langsung login dan mulai mencatat kehadiran siswa!
+   - **Siapa yang memiliki akses (Who has access):** **`Siapa saja (Anyone)`**.
+8. Klik **Terapkan (Deploy)**, salin **URL Aplikasi Web** yang berakhiran `/exec`.
+9. Tempel URL tersebut di menu pengaturan server master aplikasi (atau tanamkan ke file `src/services/storage.js`).
+10. Semua sekolah dan guru di seluruh penjuru siap menggunakan aplikasi tanpa perlu setup tambahan!
 
 ---
 
