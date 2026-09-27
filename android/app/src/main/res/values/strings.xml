@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Presensi Siswa</string>
+    <string name="title_activity_main">Presensi Siswa</string>
+    <string name="package_name">com.sekolah.presensisiswa</string>
+    <string name="custom_url_scheme">com.sekolah.presensisiswa</string>
+</resources>
