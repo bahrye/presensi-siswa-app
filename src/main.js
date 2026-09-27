@@ -117,7 +117,7 @@ function renderLoginScreen() {
           <select class="select-control" id="loginSelectGuru">
             ${state.guruList.map(g => `
               <option value="${g.id_guru}">
-                ${g.nama_guru} (Wali: ${g.wali_kelas || '-'})
+                ${g.nama_guru} (NIP / ID: ${g.id_guru} | Wali: ${g.wali_kelas || '-'})
               </option>
             `).join('')}
           </select>
@@ -358,11 +358,24 @@ function renderAdminDashboard() {
         </button>
       </div>
 
-      <!-- Panel 3: Data Guru & Kelas -->
+      <!-- Panel 3: Manajemen Data Siswa & Guru -->
       <div class="settings-section">
         <div class="settings-title">
-          ${icons.users} Sinkronisasi Data Guru & Kelas
+          ${icons.users} Manajemen Data Siswa & Guru
         </div>
+        <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">
+          Tambah siswa dan guru langsung ke database Google Sheets:
+        </p>
+
+        <div style="display:flex; gap:8px; margin-bottom:14px;">
+          <button class="btn-primary" id="btnAdminOpenAddSiswa" style="flex:1; font-size:13px; padding:11px 8px; justify-content:center;">
+            ${icons.plus} Tambah Siswa
+          </button>
+          <button class="btn-primary" id="btnAdminOpenAddGuru" style="flex:1; font-size:13px; padding:11px 8px; justify-content:center; background:linear-gradient(135deg, #059669, #10B981);">
+            ${icons.plus} Tambah Guru
+          </button>
+        </div>
+
         <div class="conf-row">
           <span class="conf-label">Total Guru Terdaftar</span>
           <span class="conf-value">${state.guruList.length} Orang</span>
@@ -372,7 +385,7 @@ function renderAdminDashboard() {
           <span class="conf-value">${state.kelasList.join(', ')}</span>
         </div>
         <button class="btn-secondary" id="btnAdminSyncData" style="width:100%; margin-top:10px;">
-          ${icons.refresh} Muat Ulang Data dari Google Sheets
+          ${icons.refresh} Sinkronkan Data dari Google Sheets
         </button>
       </div>
 
@@ -408,6 +421,96 @@ function renderAdminDashboard() {
           <button class="btn-secondary" id="btnCancelLogout" style="flex:1;">Batal</button>
           <button class="btn-logout" id="btnConfirmLogout" style="flex:1; justify-content:center;">
             ${icons.logOut} Ya, Keluar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Tambah Siswa -->
+    <div class="modal-overlay" id="modalAddSiswa">
+      <div class="modal-sheet">
+        <div class="sheet-handle"></div>
+        <div class="modal-title" style="display:flex; align-items:center; gap:8px;">
+          ${icons.user} Tambah Siswa Baru
+        </div>
+        <div class="modal-desc">Data siswa akan disimpan ke Sheet 'Siswa' dan langsung muncul di daftar kelas.</div>
+
+        <div class="input-group" style="margin-top:14px; margin-bottom:12px;">
+          <label for="inputNewSiswaNama">Nama Lengkap Siswa *</label>
+          <input type="text" class="input-control" id="inputNewSiswaNama" placeholder="Nama siswa..." />
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+          <div class="input-group">
+            <label for="selectNewSiswaKelas">Pilih Kelas *</label>
+            <select class="select-control" id="selectNewSiswaKelas">
+              ${state.kelasList.map(k => `<option value="${k}">Kelas ${k}</option>`).join('')}
+              <option value="__NEW__">+ Tambah Kelas Baru...</option>
+            </select>
+            <input type="text" class="input-control" id="inputCustomNewKelas" placeholder="Nama kelas baru..." style="display:none; margin-top:6px;" />
+          </div>
+
+          <div class="input-group">
+            <label for="selectNewSiswaJk">Jenis Kelamin</label>
+            <select class="select-control" id="selectNewSiswaJk">
+              <option value="L">Laki-laki (L)</option>
+              <option value="P">Perempuan (P)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="input-group" style="margin-bottom:18px;">
+          <label for="inputNewSiswaNisn">NISN (Opsional)</label>
+          <input type="text" class="input-control" id="inputNewSiswaNisn" placeholder="Nomor NISN siswa..." />
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn-secondary" id="btnCancelAddSiswa" style="flex:1;">Batal</button>
+          <button class="btn-primary" id="btnSubmitAddSiswa" style="flex:1;">
+            ${icons.check} Simpan Siswa
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Tambah Guru -->
+    <div class="modal-overlay" id="modalAddGuru">
+      <div class="modal-sheet">
+        <div class="sheet-handle"></div>
+        <div class="modal-title" style="display:flex; align-items:center; gap:8px;">
+          ${icons.user} Tambah Guru Pengajar
+        </div>
+        <div class="modal-desc">Guru baru akan ditambahkan ke Sheet 'Guru' dan dapat langsung login.</div>
+
+        <div class="input-group" style="margin-top:14px; margin-bottom:12px;">
+          <label for="inputNewGuruNama">Nama Lengkap & Gelar Guru *</label>
+          <input type="text" class="input-control" id="inputNewGuruNama" placeholder="Contoh: Dra. Siti Aminah, M.Pd" />
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+          <div class="input-group">
+            <label for="inputNewGuruId">NIP / ID Guru (Unik) *</label>
+            <input type="text" class="input-control" id="inputNewGuruId" placeholder="Misal: G005 atau NIP" />
+          </div>
+
+          <div class="input-group">
+            <label for="inputNewGuruPin">PIN Login Guru</label>
+            <input type="password" class="input-control" id="inputNewGuruPin" placeholder="Default: 1234" value="1234" maxlength="10" />
+          </div>
+        </div>
+
+        <div class="input-group" style="margin-bottom:18px;">
+          <label for="selectNewGuruWali">Wali Kelas (Opsional)</label>
+          <select class="select-control" id="selectNewGuruWali">
+            <option value="-">- Bukan Wali Kelas -</option>
+            ${state.kelasList.map(k => `<option value="${k}">Wali Kelas ${k}</option>`).join('')}
+          </select>
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn-secondary" id="btnCancelAddGuru" style="flex:1;">Batal</button>
+          <button class="btn-primary" id="btnSubmitAddGuru" style="flex:1; background:linear-gradient(135deg, #059669, #10B981);">
+            ${icons.check} Simpan Guru
           </button>
         </div>
       </div>
@@ -514,6 +617,125 @@ function renderAdminDashboard() {
     feedback.playSuccess();
     showToast('Password Admin berhasil diubah!', 'success');
     document.getElementById('adminInputNewPin').value = '';
+  });
+
+  // --- Modal Tambah Siswa ---
+  document.getElementById('btnAdminOpenAddSiswa').addEventListener('click', () => {
+    feedback.playTap();
+    openModal('modalAddSiswa');
+  });
+
+  document.getElementById('btnCancelAddSiswa').addEventListener('click', () => {
+    closeModal('modalAddSiswa');
+  });
+
+  const selKelas = document.getElementById('selectNewSiswaKelas');
+  const inpCustomKelas = document.getElementById('inputCustomNewKelas');
+  if (selKelas && inpCustomKelas) {
+    selKelas.addEventListener('change', () => {
+      if (selKelas.value === '__NEW__') {
+        inpCustomKelas.style.display = 'block';
+        inpCustomKelas.focus();
+      } else {
+        inpCustomKelas.style.display = 'none';
+      }
+    });
+  }
+
+  document.getElementById('btnSubmitAddSiswa').addEventListener('click', async () => {
+    const nama = document.getElementById('inputNewSiswaNama').value.trim();
+    let kelas = selKelas ? selKelas.value : '7A';
+    if (kelas === '__NEW__' && inpCustomKelas) {
+      kelas = inpCustomKelas.value.trim().toUpperCase();
+    }
+    const jk = document.getElementById('selectNewSiswaJk').value;
+    const nisn = document.getElementById('inputNewSiswaNisn').value.trim();
+
+    if (!nama) {
+      showToast('Nama Siswa wajib diisi!', 'warning');
+      return;
+    }
+    if (!kelas) {
+      showToast('Kelas Siswa wajib diisi!', 'warning');
+      return;
+    }
+
+    showLoading('Menyimpan siswa baru ke database...');
+    try {
+      const res = await api.addSiswa(state.endpointUrl, {
+        nama,
+        kelas,
+        jenis_kelamin: jk,
+        nisn: nisn || '-'
+      });
+      feedback.playSuccess();
+      showToast(res.message || `Siswa ${nama} berhasil ditambahkan!`, 'success');
+      closeModal('modalAddSiswa');
+
+      // Update state kelas jika kelas baru
+      if (!state.kelasList.includes(kelas)) {
+        state.kelasList.push(kelas);
+        state.kelasList.sort();
+      }
+      renderAdminDashboard();
+    } catch (err) {
+      showToast('Gagal menambah siswa: ' + err.message, 'error');
+    } finally {
+      hideLoading();
+    }
+  });
+
+  // --- Modal Tambah Guru ---
+  document.getElementById('btnAdminOpenAddGuru').addEventListener('click', () => {
+    feedback.playTap();
+    openModal('modalAddGuru');
+  });
+
+  document.getElementById('btnCancelAddGuru').addEventListener('click', () => {
+    closeModal('modalAddGuru');
+  });
+
+  document.getElementById('btnSubmitAddGuru').addEventListener('click', async () => {
+    const nama = document.getElementById('inputNewGuruNama').value.trim();
+    const id = document.getElementById('inputNewGuruId').value.trim();
+    const pin = document.getElementById('inputNewGuruPin').value.trim() || '1234';
+    const wali = document.getElementById('selectNewGuruWali').value;
+
+    if (!nama) {
+      showToast('Nama Guru wajib diisi!', 'warning');
+      return;
+    }
+    if (!id) {
+      showToast('NIP / ID Guru unik wajib diisi!', 'warning');
+      return;
+    }
+
+    showLoading('Menyimpan data guru...');
+    try {
+      const res = await api.addGuru(state.endpointUrl, {
+        nama_guru: nama,
+        id_guru: id,
+        pin: pin,
+        wali_kelas: wali
+      });
+      feedback.playSuccess();
+      showToast(res.message || `Guru ${nama} berhasil ditambahkan!`, 'success');
+      closeModal('modalAddGuru');
+
+      if (!state.guruList.some(g => g.id_guru === id)) {
+        state.guruList.push({
+          id_guru: id,
+          nama_guru: nama,
+          pin: pin,
+          wali_kelas: wali
+        });
+      }
+      renderAdminDashboard();
+    } catch (err) {
+      showToast('Gagal menambah guru: ' + err.message, 'error');
+    } finally {
+      hideLoading();
+    }
   });
 
   // Preview Mode Guru

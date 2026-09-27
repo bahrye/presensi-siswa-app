@@ -256,6 +256,72 @@ class ApiService {
     const url = `${cleanUrl}${cleanUrl.includes('?') ? '&' : '?'}action=setup_sheets&_t=${Date.now()}`;
     return await this.request(url, { method: 'GET' });
   }
+
+  /**
+   * Menambahkan Siswa Baru
+   */
+  async addSiswa(endpointUrl, siswaData) {
+    const cleanUrl = (endpointUrl || '').trim();
+    if (!cleanUrl) {
+      await storage.addCachedSiswa(siswaData);
+      return {
+        status: 'success',
+        isOffline: true,
+        message: 'Siswa berhasil disimpan ke penyimpanan lokal.',
+        data: siswaData
+      };
+    }
+
+    const payload = {
+      action: 'add_siswa',
+      ...siswaData
+    };
+
+    const res = await this.request(cleanUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    });
+
+    if (res && res.status === 'success') {
+      await storage.addCachedSiswa(res.data || siswaData);
+      return res;
+    }
+    throw new Error(res.message || 'Gagal menambahkan siswa.');
+  }
+
+  /**
+   * Menambahkan Guru Baru
+   */
+  async addGuru(endpointUrl, guruData) {
+    const cleanUrl = (endpointUrl || '').trim();
+    if (!cleanUrl) {
+      await storage.addCachedGuru(guruData);
+      return {
+        status: 'success',
+        isOffline: true,
+        message: 'Guru berhasil disimpan ke penyimpanan lokal.',
+        data: guruData
+      };
+    }
+
+    const payload = {
+      action: 'add_guru',
+      ...guruData
+    };
+
+    const res = await this.request(cleanUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    });
+
+    if (res && res.status === 'success') {
+      await storage.addCachedGuru(res.data || guruData);
+      return res;
+    }
+    throw new Error(res.message || 'Gagal menambahkan guru.');
+  }
 }
 
 export const api = new ApiService();

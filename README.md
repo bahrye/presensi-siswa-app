@@ -76,10 +76,12 @@ Aplikasi mendukung skema tabel berikut:
 
 Aplikasi menggunakan sistem autentikasi saat pertama kali dibuka dengan pembagian peran yang ketat:
 
-### 1. 🛡️ Akun Admin Sekolah (Portal Konfigurasi Database)
+### 1. 🛡️ Akun Admin Sekolah (Portal Konfigurasi Database & Manajemen Data)
 - **Akses:** Tab **"Admin Sekolah"** di layar awal.
 - **Password Default:** `admin123` *(dapat diganti melalui menu keamanan admin)*.
 - **Fungsi Khusus:**
+  - **Manajemen Siswa:** Tombol **"+ Tambah Siswa"** untuk menambahkan siswa baru (Nama, Kelas, Jenis Kelamin, NISN) langsung ke Sheet `Siswa`.
+  - **Manajemen Guru:** Tombol **"+ Tambah Guru"** untuk mendaftarkan akun guru baru (Nama, NIP/ID Unik, PIN, Wali Kelas) langsung ke Sheet `Guru`.
   - Memasukkan & menyimpan Web App URL Google Apps Script.
   - Menjalankan **Tes Koneksi API** ke Google Sheets.
   - Melakukan **Setup Otomatis Tabel Spreadsheet** (membuat sheet `Siswa`, `Presensi`, dan `Guru`).
@@ -88,7 +90,9 @@ Aplikasi menggunakan sistem autentikasi saat pertama kali dibuka dengan pembagia
 
 ### 2. 👨‍🏫 Akun Guru Pengajar (Presensi & Rekap Kehadiran)
 - **Akses:** Tab **"Guru Pengajar"** di layar awal.
-- **Login:** Memilih nama guru dari daftar dropdown dan memasukkan PIN (PIN Default: `1234`).
+- **Identitas Unik (ID / NIP):** Setiap guru memiliki **ID_Guru / NIP unik**. 
+  - Jika ada guru dengan **nama yang sama**, sistem membedakannya dari **NIP / ID Guru** yang tertera di menu dropdown (misal: *Siti Rahmawati - ID: G002* vs *Siti Rahmawati - ID: G005*).
+  - Jika ada guru dengan **PIN / Password yang sama** (misal sama-sama menggunakan PIN bawaan `1234`), hal ini **tidak akan tertukar/bentrok**, karena sistem mencocokkan ID Guru yang dipilih terlebih dahulu baru memverifikasi PIN.
 - **Fungsi Khusus:**
   - Input presensi harian per kelas dan tanggal dengan cepat.
   - Tombol cepat **"Set Semua Hadir"** dan input keterangan izin/sakit/alpa.

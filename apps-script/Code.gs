@@ -145,6 +145,18 @@ function doGet(e) {
       });
     }
 
+    // 7. Tambah Siswa Baru via GET (fallback)
+    if (action === "add_siswa") {
+      const result = addSiswaToSheet(ss, params);
+      return createJsonResponse(result);
+    }
+
+    // 8. Tambah Guru Baru via GET (fallback)
+    if (action === "add_guru") {
+      const result = addGuruToSheet(ss, params);
+      return createJsonResponse(result);
+    }
+
     return createJsonResponse({
       status: "error",
       message: "Action '" + action + "' tidak dikenali pada doGet."
@@ -190,6 +202,18 @@ function doPost(e) {
     // 3. Setup Sheet via POST
     if (action === "setup_sheets") {
       const result = setupInitialSheets(ss);
+      return createJsonResponse(result);
+    }
+
+    // 4. Tambah Siswa Baru
+    if (action === "add_siswa") {
+      const result = addSiswaToSheet(ss, payload);
+      return createJsonResponse(result);
+    }
+
+    // 5. Tambah Guru Baru
+    if (action === "add_guru") {
+      const result = addGuruToSheet(ss, payload);
       return createJsonResponse(result);
     }
 
@@ -352,6 +376,124 @@ function authenticateGuru(ss, payload) {
   }
 
   return { status: "error", message: "Guru dengan nama/ID tersebut tidak ditemukan." };
+}
+
+/**
+ * Menambahkan Siswa Baru ke Sheet 'Siswa'
+ */
+function addSiswaToSheet(ss, payload) {
+  if (!ss) ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheetSiswa = ss.getSheetByName(SHEET_SISWA);
+  if (!sheetSiswa) {
+    setupInitialSheets(ss);
+    sheetSiswa = ss.getSheetByName(SHEET_SISWA);
+  }
+
+  const nama = String(payload.nama || "").trim();
+  const kelas = String(payload.kelas || "").trim();
+  let nisn = String(payload.nisn || "").trim();
+  let idSiswa = String(payload.id_siswa || "").trim();
+  const jenisKelamin = String(payload.jenis_kelamin || "L").trim().toUpperCase();
+
+  if (!nama) {
+    return { status: "error", message: "Nama Siswa wajib diisi!" };
+  }
+  if (!kelas) {
+    return { status: "error", message: "Kelas Siswa wajib diisi!" };
+  }
+
+  const lastRow = sheetSiswa.getLastRow();
+  // Auto-generate id_siswa jika kosong
+  if (!idSiswa) {
+    let nextNum = lastRow;
+    idSiswa = "S" + ("000" + nextNum).slice(-3);
+  }
+  if (!nisn) {
+    nisn = "-";
+  }
+
+  // Cek duplikasi ID atau NISN jika diisi
+  if (lastRow > 1) {
+    const data = sheetSiswa.getRange(2, 1, lastRow - 1, 3).getValues();
+    for (let i = 0; i < data.length; i++) {
+      const existingId = String(data[i][0]).trim();
+      const existingNisn = String(data[i][1]).trim();
+      if (existingId.toLowerCase() === idSiswa.toLowerCase()) {
+        return { status: "error", message: "ID Siswa '" + idSiswa + "' sudah digunakan. Gunakan ID lain." };
+      }
+      if (nisn !== "-" && existingNisn === nisn) {
+        return { status: "error", message: "NISN '" + nisn + "' sudah terdaftar atas nama siswa lain." };
+      }
+    }
+  }
+
+  // Tambahkan baris baru
+  const targetRow = lastRow + 1;
+  sheetSiswa.getRange(targetRow, 1, 1, 5).setValues([[idSiswa, nisn, nama, kelas, jenisKelamin]]);
+
+  return {
+    status: "success",
+    message: "Siswa " + nama + " (" + kelas + ") berhasil ditambahkan!",
+    data: {
+      id_siswa: idSiswa,
+      nisn: nisn,
+      nama: nama,
+      kelas: kelas,
+      jenis_kelamin: jenisKelamin
+    }
+  };
+}
+
+/**
+ * Menambahkan Guru Baru ke Sheet 'Guru'
+ */
+function addGuruToSheet(ss, payload) {
+  if (!ss) ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheetGuru = ss.getSheetByName(SHEET_GURU);
+  if (!sheetGuru) {
+    setupInitialSheets(ss);
+    sheetGuru = ss.getSheetByName(SHEET_GURU);
+  }
+
+  const namaGuru = String(payload.nama_guru || "").trim();
+  let idGuru = String(payload.id_guru || "").trim();
+  const pin = String(payload.pin || payload.pin_password || "1234").trim();
+  const waliKelas = String(payload.wali_kelas || "-").trim();
+
+  if (!namaGuru) {
+    return { status: "error", message: "Nama Guru wajib diisi!" };
+  }
+  if (!idGuru) {
+    const nextNum = sheetGuru.getLastRow();
+    idGuru = "G" + ("000" + nextNum).slice(-3);
+  }
+
+  // Cek apakah id_guru (NIP/Username) sudah terdaftar
+  const lastRow = sheetGuru.getLastRow();
+  if (lastRow > 1) {
+    const data = sheetGuru.getRange(2, 1, lastRow - 1, 2).getValues();
+    for (let i = 0; i < data.length; i++) {
+      const existingId = String(data[i][0]).trim();
+      if (existingId.toLowerCase() === idGuru.toLowerCase()) {
+        return { status: "error", message: "ID Guru / NIP '" + idGuru + "' sudah digunakan. Harap gunakan ID / NIP lain." };
+      }
+    }
+  }
+
+  // Tambahkan baris baru
+  const targetRow = lastRow + 1;
+  sheetGuru.getRange(targetRow, 1, 1, 4).setValues([[idGuru, namaGuru, pin, waliKelas]]);
+
+  return {
+    status: "success",
+    message: "Guru " + namaGuru + " (ID: " + idGuru + ") berhasil ditambahkan!",
+    data: {
+      id_guru: idGuru,
+      nama_guru: namaGuru,
+      pin: pin,
+      wali_kelas: waliKelas
+    }
+  };
 }
 
 /**

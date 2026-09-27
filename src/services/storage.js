@@ -161,6 +161,44 @@ class StorageService {
     await this.set(KEYS.CACHED_SISWA, all);
   }
 
+  async addCachedSiswa(siswa) {
+    const all = await this.get(KEYS.CACHED_SISWA, DEFAULT_SAMPLE_DATA.siswa) || {};
+    const kelas = siswa.kelas || '7A';
+    if (!all[kelas]) all[kelas] = [];
+    const idx = all[kelas].findIndex(s => s.id_siswa === siswa.id_siswa || (s.nisn && s.nisn === siswa.nisn && s.nisn !== '-'));
+    if (idx >= 0) {
+      all[kelas][idx] = siswa;
+    } else {
+      all[kelas].push(siswa);
+    }
+    all[kelas].sort((a, b) => (a.nama || '').localeCompare(b.nama || ''));
+    await this.set(KEYS.CACHED_SISWA, all);
+    await this.ensureKelasExists(kelas);
+  }
+
+  async addCachedGuru(guru) {
+    const list = await this.getCachedGuruList();
+    const idx = list.findIndex(g => g.id_guru === guru.id_guru);
+    if (idx >= 0) {
+      list[idx] = guru;
+    } else {
+      list.push(guru);
+    }
+    await this.setCachedGuruList(list);
+    if (guru.wali_kelas && guru.wali_kelas !== '-') {
+      await this.ensureKelasExists(guru.wali_kelas);
+    }
+  }
+
+  async ensureKelasExists(kelas) {
+    const list = await this.getCachedKelasList();
+    if (!list.includes(kelas)) {
+      list.push(kelas);
+      list.sort();
+      await this.setCachedKelasList(list);
+    }
+  }
+
   // Antrean Pengiriman Offline (Offline Sync Queue)
   async getOfflineQueue() {
     return await this.get(KEYS.OFFLINE_QUEUE, []);
