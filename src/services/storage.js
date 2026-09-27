@@ -6,6 +6,8 @@ import { Preferences } from '@capacitor/preferences';
 
 const KEYS = {
   ENDPOINT_URL: 'presensi_endpoint_url',
+  ACTIVE_SESSION: 'presensi_active_session',
+  ADMIN_PIN: 'presensi_admin_pin',
   CURRENT_GURU: 'presensi_current_guru',
   CACHED_GURU: 'presensi_cached_guru',
   CACHED_SISWA: 'presensi_cached_siswa',
@@ -86,7 +88,28 @@ class StorageService {
     localStorage.removeItem(key);
   }
 
-  // --- Helpers Khusus Aplikasi ---
+  // --- Helpers Khusus Sesi & Autentikasi ---
+
+  async getSession() {
+    return await this.get(KEYS.ACTIVE_SESSION, null);
+  }
+
+  async setSession(sessionData) {
+    return await this.set(KEYS.ACTIVE_SESSION, sessionData);
+  }
+
+  async clearSession() {
+    await this.remove(KEYS.ACTIVE_SESSION);
+    await this.remove(KEYS.CURRENT_GURU);
+  }
+
+  async getAdminPin() {
+    return await this.get(KEYS.ADMIN_PIN, 'admin123');
+  }
+
+  async setAdminPin(pin) {
+    return await this.set(KEYS.ADMIN_PIN, pin);
+  }
 
   async getEndpointUrl() {
     return await this.get(KEYS.ENDPOINT_URL, '');
@@ -97,7 +120,11 @@ class StorageService {
   }
 
   async getCurrentGuru() {
-    return await this.get(KEYS.CURRENT_GURU, DEFAULT_SAMPLE_DATA.guruList[0]);
+    const session = await this.getSession();
+    if (session && session.role === 'guru') {
+      return session.guru;
+    }
+    return await this.get(KEYS.CURRENT_GURU, null);
   }
 
   async setCurrentGuru(guru) {

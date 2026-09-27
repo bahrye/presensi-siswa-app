@@ -72,6 +72,31 @@ Aplikasi mendukung skema tabel berikut:
 
 ---
 
+## 🔐 Sistem Autentikasi & Hak Akses Akun
+
+Aplikasi menggunakan sistem autentikasi saat pertama kali dibuka dengan pembagian peran yang ketat:
+
+### 1. 🛡️ Akun Admin Sekolah (Portal Konfigurasi Database)
+- **Akses:** Tab **"Admin Sekolah"** di layar awal.
+- **Password Default:** `admin123` *(dapat diganti melalui menu keamanan admin)*.
+- **Fungsi Khusus:**
+  - Memasukkan & menyimpan Web App URL Google Apps Script.
+  - Menjalankan **Tes Koneksi API** ke Google Sheets.
+  - Melakukan **Setup Otomatis Tabel Spreadsheet** (membuat sheet `Siswa`, `Presensi`, dan `Guru`).
+  - Menyinkronkan daftar guru pengajar dan kelas dari Spreadsheet.
+  - Mengubah password administrator.
+
+### 2. 👨‍🏫 Akun Guru Pengajar (Presensi & Rekap Kehadiran)
+- **Akses:** Tab **"Guru Pengajar"** di layar awal.
+- **Login:** Memilih nama guru dari daftar dropdown dan memasukkan PIN (PIN Default: `1234`).
+- **Fungsi Khusus:**
+  - Input presensi harian per kelas dan tanggal dengan cepat.
+  - Tombol cepat **"Set Semua Hadir"** dan input keterangan izin/sakit/alpa.
+  - Tab **Riwayat Kehadiran** dan **Rekap Bulanan**.
+  - **Bebas Konfigurasi Teknis:** Guru **tidak melihat** konfigurasi Google Sheets URL sehingga antarmuka tetap bersih, fokus, dan aman dari salah ubah.
+
+---
+
 ## 🚀 Panduan Setup Backend (Google Apps Script)
 
 1. Buka spreadsheet baru di [Google Sheets](https://sheets.new).
@@ -86,8 +111,9 @@ Aplikasi mendukung skema tabel berikut:
    - **Siapa yang memiliki akses (Who has access):** **`Siapa saja (Anyone)`** *(Wajib dipilih Anyone)*.
 8. Klik **Terapkan (Deploy)**, berikan otorisasi izin akun Google jika diminta.
 9. Salin **URL Aplikasi Web** yang berakhiran `/exec`.
-10. Buka aplikasi, masuk ke menu **Pengaturan**, tempel URL tersebut, lalu klik **"Tes Koneksi"**.
-11. Klik tombol **"Setup Otomatis Tabel Spreadsheet"** untuk mengisi sheet dan data siswa secara otomatis.
+10. Buka aplikasi, pilih tab **Admin Sekolah** (PIN: `admin123`), tempel URL tersebut, lalu klik **"Simpan URL"** dan **"Tes Koneksi"**.
+11. Klik tombol **"Setup Otomatis Tabel Spreadsheet"** untuk membuat sheet dan mengisinya dengan data sampel secara otomatis.
+12. Guru kini dapat langsung login dan mulai mencatat kehadiran siswa!
 
 ---
 
