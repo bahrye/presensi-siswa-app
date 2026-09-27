@@ -20,7 +20,7 @@ const KEYS = {
 };
 
 // URL Default Master Google Apps Script (Bisa diset sekali untuk semua sekolah)
-export const DEFAULT_MASTER_ENDPOINT_URL = '';
+export const DEFAULT_MASTER_ENDPOINT_URL = 'https://script.google.com/macros/s/AKfycbxBaYNzkYMN5J8uFRu1BTmhHYV-OHIOjBfceTGw95ohKz3Fp0fDqVeRXX7eDHGM75-usQ/exec';
 
 // Data Contoh Multi-Sekolah (Langsung siap pakai bahkan saat offline)
 export const DEFAULT_SAMPLE_SCHOOLS = [
@@ -98,14 +98,14 @@ class StorageService {
     const stringVal = JSON.stringify(value);
     try {
       await Preferences.set({ key, value: stringVal });
-    } catch (e) {}
+    } catch (e) { }
     localStorage.setItem(key, stringVal);
   }
 
   async remove(key) {
     try {
       await Preferences.remove({ key });
-    } catch (e) {}
+    } catch (e) { }
     localStorage.removeItem(key);
   }
 
